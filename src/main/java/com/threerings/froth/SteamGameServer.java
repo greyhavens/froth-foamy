@@ -42,7 +42,12 @@ public class SteamGameServer
   /**
    * A callback interface for parties interested in the response to
    * {@code sendUserConnectAndAuthenticate}.
+   *
+   * @deprecated The legacy {@code SendUserConnectAndAuthenticate} flow is marked
+   *     {@code _DEPRECATED} in the Steamworks SDK and is slated for removal. Use
+   *     {@link #beginAuthSession} with an {@link AuthSessionCallback} for new code.
    */
+  @Deprecated
   public interface AuthenticateCallback
   {
     /**

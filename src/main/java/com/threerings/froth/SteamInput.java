@@ -80,7 +80,11 @@ public class SteamInput
     ;
   }
 
-  /** The controller pads for legacy haptic pulse methods. */
+  /**
+   * The controller pads for legacy haptic pulse methods. Deprecated alongside the
+   * {@code Legacy_*} haptic methods that consume it.
+   */
+  @Deprecated
   public enum ControllerPad
   {
     // Note: ordinals correspond to native ESteamControllerPad values. Do not reorder!
@@ -694,7 +698,10 @@ public class SteamInput
    *
    * @param origin the action origin.
    * @return the file path, or null if unavailable.
+   * @deprecated wraps Steam's {@code GetGlyphForActionOrigin_Legacy}. Prefer
+   *     {@link #getGlyphPNGForActionOrigin} or {@link #getGlyphSVGForActionOrigin}.
    */
+  @Deprecated
   public static String getGlyphForActionOriginLegacy (int origin)
   {
     if (!_initialized) return null;
@@ -894,7 +901,11 @@ public class SteamInput
   /**
    * Triggers a haptic pulse on a Steam Controller. If you are approximating rumble you may
    * want to use {@link #triggerVibration} instead.
+   *
+   * @deprecated wraps Steam's {@code Legacy_TriggerHapticPulse}. Prefer
+   *     {@link #triggerVibration} or {@link #triggerSimpleHapticEvent}.
    */
+  @Deprecated
   public static void legacyTriggerHapticPulse (
     long inputHandle, ControllerPad targetPad, int durationMicroSec)
   {
@@ -912,7 +923,11 @@ public class SteamInput
 
   /**
    * Triggers a repeated haptic pulse on a Steam Controller.
+   *
+   * @deprecated wraps Steam's {@code Legacy_TriggerRepeatedHapticPulse}. Prefer
+   *     {@link #triggerVibration} or {@link #triggerSimpleHapticEvent}.
    */
+  @Deprecated
   public static void legacyTriggerRepeatedHapticPulse (
     long inputHandle, ControllerPad targetPad,
     int durationMicroSec, int offMicroSec, int repeat, int flags)

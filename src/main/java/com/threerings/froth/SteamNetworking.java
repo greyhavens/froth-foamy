@@ -24,11 +24,17 @@ public class SteamNetworking
    *
    * <p>Note: ordinals here are intentionally arranged so that {@code values()[errorCode]}
    * yields the right enum for the sparse Steam codes (0=None, 2=NoRights, 4=Timeout).
-   * NOT_RUNNING_APP and DESTINATION_NOT_LOGGED_IN are placeholders preserved from the
-   * original froth API for binary compatibility.
    */
   public enum P2PSessionError {
-    NONE, NOT_RUNNING_APP, NO_RIGHTS_TO_APP, DESTINATION_NOT_LOGGED_IN, TIMEOUT };
+    NONE,
+    @Deprecated
+    NOT_RUNNING_APP,
+    NO_RIGHTS_TO_APP,
+    @Deprecated
+    DESTINATION_NOT_LOGGED_IN,
+    TIMEOUT,
+    ;
+  };
 
   /**
    * A callback interface for parties interested in requests to establish P2P connections.

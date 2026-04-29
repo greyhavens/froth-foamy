@@ -13,15 +13,12 @@ public class SteamGameServerStats
   /**
    * Sets a user achievement.
    */
-  public static boolean setUserAchievement (int userSteamId, String name)
+  public static boolean setUserAchievement (long userSteamId, String name)
   {
     try (Arena arena = Arena.ofConfined()) {
       MemorySegment n = CSteam.allocCString(arena, name);
-      // Note: the original froth API signature takes int for the user steam ID even
-      // though it's a 64-bit value at the C level. We sign-extend to match the prior
-      // behavior; new code should use the long-typed variants if 64-bit IDs are needed.
       return (boolean) CSteam.ISteamGameServerStats_SetUserAchievement.invokeExact(
-        self(), (long) userSteamId, n);
+        self(), userSteamId, n);
     } catch (Throwable t) {
       throw SteamAPI.wrap(t);
     }

@@ -13,6 +13,8 @@ import com.threerings.froth.internal.CSteam;
 /**
  * Represents the Steam networking interface.
  */
+// TODO This entire class is deprecated, but we're not ready!
+// @Deprecated
 public class SteamNetworking
 {
   /** The available P2P send types. */

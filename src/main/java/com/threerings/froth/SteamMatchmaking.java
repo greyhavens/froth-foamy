@@ -12,16 +12,28 @@ import com.threerings.froth.internal.CSteam;
  */
 public class SteamMatchmaking
 {
-  /** The available lobby types. */
-  public enum LobbyType { PRIVATE, FRIENDS_ONLY, PUBLIC, INVISIBLE };
+  /**
+   * The available lobby types. Ordinals correspond to native {@code ELobbyType} values.
+   * {@link #PRIVATE_UNIQUE} can only be created from the Steam web API; it is included
+   * here for completeness and so the enum survives any value Steam might return.
+   */
+  public enum LobbyType {
+    // Note: ordinals correspond to native ELobbyType values. Do not reorder!
+    PRIVATE, FRIENDS_ONLY, PUBLIC, INVISIBLE, PRIVATE_UNIQUE };
 
   /** Result codes. */
   public enum Result { OK, NO_CONNECTION, TIMEOUT, FAIL, ACCESS_DENIED, LIMIT_EXCEEDED };
 
-  /** Chat room enter request responses. */
+  /**
+   * Chat room enter request responses. Native {@code EChatRoomEnterResponse} starts at 1
+   * and skips a few values, so we map by name in {@link #chatRoomEnterToEnum} rather than
+   * relying on ordinals.
+   */
   public enum ChatRoomEnterResponse {
     SUCCESS, DOESNT_EXIST, NOT_ALLOWED, FULL, ERROR,
-    BANNED, LIMITED, CLAN_DISABLED, COMMUNITY_BAN };
+    BANNED, LIMITED, CLAN_DISABLED, COMMUNITY_BAN,
+    MEMBER_BLOCKED_YOU, YOU_BLOCKED_MEMBER,
+    RATELIMIT_EXCEEDED };
 
   /**
    * Used to communicate the result of a lobby creation request.
@@ -221,15 +233,19 @@ public class SteamMatchmaking
   private static ChatRoomEnterResponse chatRoomEnterToEnum (int response)
   {
     return switch (response) {
-      case 1 -> ChatRoomEnterResponse.SUCCESS;
-      case 2 -> ChatRoomEnterResponse.DOESNT_EXIST;
-      case 3 -> ChatRoomEnterResponse.NOT_ALLOWED;
-      case 4 -> ChatRoomEnterResponse.FULL;
-      case 5 -> ChatRoomEnterResponse.ERROR;
-      case 6 -> ChatRoomEnterResponse.BANNED;
-      case 7 -> ChatRoomEnterResponse.LIMITED;
-      case 8 -> ChatRoomEnterResponse.CLAN_DISABLED;
-      case 9 -> ChatRoomEnterResponse.COMMUNITY_BAN;
+      case 1  -> ChatRoomEnterResponse.SUCCESS;
+      case 2  -> ChatRoomEnterResponse.DOESNT_EXIST;
+      case 3  -> ChatRoomEnterResponse.NOT_ALLOWED;
+      case 4  -> ChatRoomEnterResponse.FULL;
+      case 5  -> ChatRoomEnterResponse.ERROR;
+      case 6  -> ChatRoomEnterResponse.BANNED;
+      case 7  -> ChatRoomEnterResponse.LIMITED;
+      case 8  -> ChatRoomEnterResponse.CLAN_DISABLED;
+      case 9  -> ChatRoomEnterResponse.COMMUNITY_BAN;
+      case 10 -> ChatRoomEnterResponse.MEMBER_BLOCKED_YOU;
+      case 11 -> ChatRoomEnterResponse.YOU_BLOCKED_MEMBER;
+      // Native values 12-14 are reserved/unused. Steam jumps to 15 for ratelimit.
+      case 15 -> ChatRoomEnterResponse.RATELIMIT_EXCEEDED;
       default -> ChatRoomEnterResponse.ERROR; // unknown values from newer SDKs
     };
   }

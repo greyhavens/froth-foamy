@@ -27,12 +27,12 @@ public class SteamGameServerStats
   /**
    * Clears a user achievement.
    */
-  public static boolean clearUserAchievement (int userSteamId, String name)
+  public static boolean clearUserAchievement (long userSteamId, String name)
   {
     try (Arena arena = Arena.ofConfined()) {
       MemorySegment n = CSteam.allocCString(arena, name);
       return (boolean) CSteam.ISteamGameServerStats_ClearUserAchievement.invokeExact(
-        self(), (long) userSteamId, n);
+        self(), userSteamId, n);
     } catch (Throwable t) {
       throw SteamAPI.wrap(t);
     }

@@ -30,11 +30,14 @@ public class SteamGameServer
   public enum BeginAuthSessionResult {
     OK, INVALID_TICKET, DUPLICATE_REQUEST, INVALID_VERSION, GAME_MISMATCH, EXPIRED_TICKET };
 
-  /** Response codes for {@link #beginAuthSession}. */
+  /** Response codes for {@link #beginAuthSession}. Ordinals correspond to native
+   *  {@code EAuthSessionResponse} values. */
   public enum AuthSessionResponse {
+    // Note: ordinals correspond to native EAuthSessionResponse values. Do not reorder!
     OK, USER_NOT_CONNECTED_TO_STEAM, NO_LICENSE_OR_EXPIRED, VAC_BANNED,
     LOGGED_IN_ELSEWHERE, VAC_CHECK_TIMED_OUT, AUTH_TICKET_CANCELED,
-    AUTH_TICKET_INVALID_ALREADY_USED, AUTH_TICKET_INVALID };
+    AUTH_TICKET_INVALID_ALREADY_USED, AUTH_TICKET_INVALID,
+    PUBLISHER_ISSUED_BAN, AUTH_TICKET_NETWORK_IDENTITY_FAILURE };
 
   /**
    * A callback interface for parties interested in the response to

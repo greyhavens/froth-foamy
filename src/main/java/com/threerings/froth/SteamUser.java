@@ -14,10 +14,17 @@ import com.threerings.froth.internal.CSteam;
  */
 public class SteamUser
 {
-  /** Result codes for {@link #getVoice} and {@link #decompressVoice}, etc. */
+  /**
+   * Result codes for {@link #getVoice} and {@link #decompressVoice}, etc. Ordinals
+   * correspond to the native {@code EVoiceResult} values. Any value Steam returns that
+   * isn't represented here is mapped to {@link #NO_DATA} by the public methods rather
+   * than throwing.
+   */
   public enum VoiceResult {
+    // Note: ordinals correspond to native EVoiceResult values. Do not reorder!
     OK, NOT_INITIALIZED, NOT_RECORDING, NO_DATA, BUFFER_TOO_SMALL,
-    DATA_CORRUPTED, RESTRICTED, UNSUPPORTED_CODEC };
+    DATA_CORRUPTED, RESTRICTED, UNSUPPORTED_CODEC,
+    RECEIVER_OUT_OF_DATE, RECEIVER_DID_NOT_ANSWER };
 
   /**
    * A callback interface for parties interested in server connection events.
@@ -165,7 +172,7 @@ public class SteamUser
         CSteam.ofBuffer(compressed),
         CSteam.ofBuffer(uncompressed),
         uncompressedDesiredSampleRate);
-      return VoiceResult.values()[rc];
+      return toVoiceResult(rc);
     } catch (Throwable t) {
       throw SteamAPI.wrap(t);
     }
@@ -207,7 +214,7 @@ public class SteamUser
           uncompressed.limit(uLen.get(ValueLayout.JAVA_INT, 0));
         }
       }
-      return VoiceResult.values()[rc];
+      return toVoiceResult(rc);
     } catch (Throwable t) {
       throw SteamAPI.wrap(t);
     }
@@ -232,10 +239,21 @@ public class SteamUser
       if (rc == 0) {
         dest.limit(dLen.get(ValueLayout.JAVA_INT, 0));
       }
-      return VoiceResult.values()[rc];
+      return toVoiceResult(rc);
     } catch (Throwable t) {
       throw SteamAPI.wrap(t);
     }
+  }
+
+  /**
+   * Maps a native {@code EVoiceResult} integer to its enum value, defending against
+   * future Steam SDK additions by falling back to {@link VoiceResult#NO_DATA} for any
+   * value outside the known range.
+   */
+  private static VoiceResult toVoiceResult (int rc)
+  {
+    VoiceResult[] vals = VoiceResult.values();
+    return (rc >= 0 && rc < vals.length) ? vals[rc] : VoiceResult.NO_DATA;
   }
 
   /**

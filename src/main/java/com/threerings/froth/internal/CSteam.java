@@ -265,7 +265,7 @@ public final class CSteam
   public static final MethodHandle SteamAPI_SteamGameServerUtils =
     dc("SteamAPI_SteamGameServerUtils_v010", FunctionDescriptor.of(PTR));
   public static final MethodHandle SteamAPI_SteamApps =
-    dc("SteamAPI_SteamApps_v008", FunctionDescriptor.of(PTR));
+    dc("SteamAPI_SteamApps_v009", FunctionDescriptor.of(PTR));
   public static final MethodHandle SteamAPI_SteamMatchmaking =
     dc("SteamAPI_SteamMatchmaking_v009", FunctionDescriptor.of(PTR));
   public static final MethodHandle SteamAPI_SteamNetworking =

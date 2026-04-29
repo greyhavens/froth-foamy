@@ -10,7 +10,8 @@
     <packaging>jar</packaging>
 
     <name>Froth-Foamy - Java API for Steam SDK, via FFM</name>
-    <description>Java bindings for Valve's steamworks_sdk using the Foreign Function and Memory API.</description>
+    <description>Drop-in replacement for froth: pure-Java bindings for the Steamworks SDK
+        using the Foreign Function and Memory API.</description>
 
     <properties>
         <maven.compiler.release>25</maven.compiler.release>

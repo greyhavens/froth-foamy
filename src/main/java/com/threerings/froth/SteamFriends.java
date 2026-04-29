@@ -27,6 +27,18 @@ public class SteamFriends
     NONE, ADD_TO_CART, ADD_TO_CART_AND_SHOW
   };
 
+  /** Where to place the browser window when opening the game overlay to a web page. */
+  public enum WebPageMode {
+    // Note: ordinals correspond to native EActivateGameOverlayToWebPageMode values. Do not reorder!
+    /** Browser opens alongside other overlay windows and remains open if the user closes
+     *  and re-opens the overlay. */
+    DEFAULT,
+    /** Browser opens in a special overlay configuration that hides other windows. Closing
+     *  either the overlay or the browser window dismisses both. */
+    MODAL,
+    ;
+  }
+
   /**
    * Used to communicate activation and deactivation of the game overlay.
    */
@@ -196,15 +208,28 @@ public class SteamFriends
   }
 
   /**
-   * Activates the game overlay and opens the identified web page.
+   * Activates the game overlay and opens the identified web page in the default browser
+   * window mode. Equivalent to {@link #activateGameOverlayToWebPage(String, WebPageMode)}
+   * with {@link WebPageMode#DEFAULT}.
    */
   public static void activateGameOverlayToWebPage (String url)
   {
+    activateGameOverlayToWebPage(url, WebPageMode.DEFAULT);
+  }
+
+  /**
+   * Activates the game overlay and opens the identified web page using the supplied
+   * browser window mode.
+   */
+  public static void activateGameOverlayToWebPage (String url, WebPageMode mode)
+  {
+    if (mode == null) {
+      throw new NullPointerException("mode");
+    }
     try (Arena arena = Arena.ofConfined()) {
       MemorySegment urlSeg = CSteam.allocCString(arena, url);
-      // EActivateGameOverlayToWebPageMode: 0 = Default (matches froth's prior call,
-      // which did not pass the optional second arg before its addition in 1.42).
-      CSteam.ISteamFriends_ActivateGameOverlayToWebPage.invokeExact(self(), urlSeg, 0);
+      CSteam.ISteamFriends_ActivateGameOverlayToWebPage.invokeExact(
+        self(), urlSeg, mode.ordinal());
     } catch (Throwable t) {
       throw SteamAPI.wrap(t);
     }

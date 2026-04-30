@@ -7,6 +7,7 @@ import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.threerings.froth.internal.CSteam;
 
@@ -43,6 +44,21 @@ public class SteamUtils
      * @param severity the severity level (zero for message, one for warning).
      */
     public void warning (int severity, String message);
+  }
+
+  /**
+   * A callback interface for parties interested in the floating on-screen keyboard
+   * being dismissed (either by the user or by an explicit
+   * {@link #dismissFloatingGamepadTextInput} call).
+   */
+  public interface FloatingGamepadTextInputDismissedCallback
+  {
+    /**
+     * Called when the floating on-screen keyboard has been closed. The Steam SDK
+     * doesn't tell us whether the user submitted or canceled -- the host application
+     * already knows what's in its own text field at the time of dismissal.
+     */
+    public void floatingGamepadTextInputDismissed ();
   }
 
   /**
@@ -150,6 +166,50 @@ public class SteamUtils
   }
 
   /**
+   * Dismisses the floating on-screen keyboard if it is currently shown. Listeners
+   * registered via {@link #addFloatingGamepadTextInputDismissedCallback} will be
+   * notified once the keyboard finishes closing.
+   *
+   * @return true if the keyboard was successfully dismissed.
+   */
+  public static boolean dismissFloatingGamepadTextInput ()
+  {
+    try {
+      return (boolean) CSteam.ISteamUtils_DismissFloatingGamepadTextInput.invokeExact(self());
+    } catch (Throwable t) {
+      throw SteamAPI.wrap(t);
+    }
+  }
+
+  /**
+   * Adds a listener that will be notified when the floating on-screen keyboard is
+   * dismissed -- either by the user or via {@link #dismissFloatingGamepadTextInput}.
+   */
+  public static void addFloatingGamepadTextInputDismissedCallback (
+    FloatingGamepadTextInputDismissedCallback callback)
+  {
+    if (_floatingDismissedCallbacks.isEmpty()) {
+      SteamAPI.dispatcher().setBroadcastHandler(
+        CB_FloatingGamepadTextInputDismissed, seg -> {
+          // FloatingGamepadTextInputDismissed_t carries no payload.
+          for (FloatingGamepadTextInputDismissedCallback cb : _floatingDismissedCallbacks) {
+            cb.floatingGamepadTextInputDismissed();
+          }
+        });
+    }
+    _floatingDismissedCallbacks.add(callback);
+  }
+
+  /**
+   * Removes a previously registered floating-keyboard dismissal listener.
+   */
+  public static void removeFloatingGamepadTextInputDismissedCallback (
+    FloatingGamepadTextInputDismissedCallback callback)
+  {
+    _floatingDismissedCallbacks.remove(callback);
+  }
+
+  /**
    * Checks whether Steam is running on a Steam Deck device.
    *
    * @returns true if the current device is a Steam Deck, otherwise false.
@@ -214,6 +274,13 @@ public class SteamUtils
 
   /** Cached upcall stub; created lazily on first hook registration and reused. */
   private static volatile MemorySegment _warningStub;
+
+  /** Callback ID (k_iSteamUtilsCallbacks = 700, FloatingGamepadTextInputDismissed_t = +38). */
+  private static final int CB_FloatingGamepadTextInputDismissed = 738;
+
+  /** Listeners for floating-keyboard dismissal events. */
+  private static final CopyOnWriteArrayList<FloatingGamepadTextInputDismissedCallback>
+    _floatingDismissedCallbacks = new CopyOnWriteArrayList<>();
 
   private static volatile MemorySegment _self;
 }

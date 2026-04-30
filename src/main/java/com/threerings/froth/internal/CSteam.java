@@ -374,6 +374,9 @@ public final class CSteam
   public static final MethodHandle ISteamUtils_ShowFloatingGamepadTextInput =
     dc("SteamAPI_ISteamUtils_ShowFloatingGamepadTextInput",
       FunctionDescriptor.of(BOOL, PTR, I32, I32, I32, I32, I32));
+  public static final MethodHandle ISteamUtils_DismissFloatingGamepadTextInput =
+    dc("SteamAPI_ISteamUtils_DismissFloatingGamepadTextInput",
+      FunctionDescriptor.of(BOOL, PTR));
 
   // ====================================================================================
   // Section 11: ISteamMatchmaking

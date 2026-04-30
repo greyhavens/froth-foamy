@@ -19,4 +19,5 @@ those are not included here. This was built against Steamworks SDK 1.64.
 At init time (in `SteamAPI.init()`), this library calls `System.loadLibrary("steam_api")`
 on Linux/macOS and `System.loadLibrary("steam_api64")` on Windows. As with froth, you are
 responsible for putting the platform-appropriate Steam shared library somewhere on
-`java.library.path` before initialization.
+`java.library.path` before initialization. Setting the system property
+`com.threerings.froth.disable_steam_api=true` will avoid even trying to load the library.

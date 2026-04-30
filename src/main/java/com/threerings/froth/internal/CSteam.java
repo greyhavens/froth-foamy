@@ -37,22 +37,24 @@ public final class CSteam
   static {
     boolean loaded = false;
     SymbolLookup lookup = null;
-    // Java 25 only ships 64-bit, so we try the platform-appropriate library name. Linux
-    // and macOS use libsteam_api.{so,dylib} (just "steam_api"), Windows uses steam_api64.
-    String osName = System.getProperty("os.name", "").toLowerCase();
-    boolean isWindows = osName.contains("win");
-    try {
-      System.loadLibrary(isWindows ? "steam_api64" : "steam_api");
-      lookup = SymbolLookup.loaderLookup();
-      loaded = true;
-    } catch (UnsatisfiedLinkError outer) {
-      // Fall back to the other name in case someone has placed the lib oddly.
+    if (!Boolean.getBoolean("com.threerings.froth.disable_steam_api")) {
+      // Java 25 only ships 64-bit, so we try the platform-appropriate library name. Linux
+      // and macOS use libsteam_api.{so,dylib} (just "steam_api"), Windows uses steam_api64.
+      String osName = System.getProperty("os.name", "").toLowerCase();
+      boolean isWindows = osName.contains("win");
       try {
-        System.loadLibrary(isWindows ? "steam_api" : "steam_api64");
+        System.loadLibrary(isWindows ? "steam_api64" : "steam_api");
         lookup = SymbolLookup.loaderLookup();
         loaded = true;
-      } catch (UnsatisfiedLinkError inner) {
-        // Leave LIB_LOADED = false; downcalls will not be initialized below.
+      } catch (UnsatisfiedLinkError outer) {
+        // Fall back to the other name in case someone has placed the lib oddly.
+        try {
+          System.loadLibrary(isWindows ? "steam_api" : "steam_api64");
+          lookup = SymbolLookup.loaderLookup();
+          loaded = true;
+        } catch (UnsatisfiedLinkError inner) {
+          // Leave LIB_LOADED = false; downcalls will not be initialized below.
+        }
       }
     }
     LIB_LOADED = loaded;

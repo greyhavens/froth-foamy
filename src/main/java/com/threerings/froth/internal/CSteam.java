@@ -138,6 +138,14 @@ public final class CSteam
   /** {@code DlcInstalled_t}: { AppId_t (uint32) appID; } */
   public static final long DLC_OFFSET_APPID = 0;
 
+  /**
+   * {@code GamepadTextInputDismissed_t}: { bool submitted; uint32 submittedText; AppId_t appID; }.
+   * Offsets stable across pack(4) and pack(8) since the largest field is uint32.
+   */
+  public static final long GAMEPAD_DISMISSED_OFFSET_SUBMITTED      = 0;
+  public static final long GAMEPAD_DISMISSED_OFFSET_SUBMITTED_TEXT = 4;
+  public static final long GAMEPAD_DISMISSED_OFFSET_APP_ID         = 8;
+
   /** {@code P2PSessionRequest_t}: { uint64 steamIDRemote; } */
   public static final long P2P_REQ_OFFSET_REMOTE = 0;
 
@@ -377,6 +385,17 @@ public final class CSteam
   public static final MethodHandle ISteamUtils_DismissFloatingGamepadTextInput =
     dc("SteamAPI_ISteamUtils_DismissFloatingGamepadTextInput",
       FunctionDescriptor.of(BOOL, PTR));
+  /** {@code bool ShowGamepadTextInput(self, EGamepadTextInputMode, EGamepadTextInputLineMode, const char* desc, uint32 charMax, const char* existing)} */
+  public static final MethodHandle ISteamUtils_ShowGamepadTextInput =
+    dc("SteamAPI_ISteamUtils_ShowGamepadTextInput",
+      FunctionDescriptor.of(BOOL, PTR, I32, I32, PTR, I32, PTR));
+  public static final MethodHandle ISteamUtils_GetEnteredGamepadTextLength =
+    dc("SteamAPI_ISteamUtils_GetEnteredGamepadTextLength", FunctionDescriptor.of(I32, PTR));
+  public static final MethodHandle ISteamUtils_GetEnteredGamepadTextInput =
+    dc("SteamAPI_ISteamUtils_GetEnteredGamepadTextInput",
+      FunctionDescriptor.of(BOOL, PTR, PTR, I32));
+  public static final MethodHandle ISteamUtils_DismissGamepadTextInput =
+    dc("SteamAPI_ISteamUtils_DismissGamepadTextInput", FunctionDescriptor.of(BOOL, PTR));
 
   // ====================================================================================
   // Section 11: ISteamMatchmaking

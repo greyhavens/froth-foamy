@@ -34,6 +34,35 @@ public class SteamUtils
   }
 
   /**
+   * Input modes for the full-screen gamepad text entry UI shown via
+   * {@link #showGamepadTextInput}. Ordinals correspond to native
+   * {@code EGamepadTextInputMode} values.
+   */
+  public enum GamepadTextInputMode
+  {
+    // Note: ordinals correspond to native EGamepadTextInputMode values. Do not reorder!
+    /** Plaintext entry. */
+    NORMAL,
+    /** Entered characters are masked. */
+    PASSWORD,
+    ;
+  }
+
+  /**
+   * Line modes for the full-screen gamepad text entry UI. Ordinals correspond to native
+   * {@code EGamepadTextInputLineMode} values.
+   */
+  public enum GamepadTextInputLineMode
+  {
+    // Note: ordinals correspond to native EGamepadTextInputLineMode values. Do not reorder!
+    /** A single line of input. Pressing enter dismisses the keyboard. */
+    SINGLE_LINE,
+    /** Multiple lines of input. The user must explicitly dismiss the keyboard. */
+    MULTIPLE_LINES,
+    ;
+  }
+
+  /**
    * Provides a means to obtain warning messages from the Steam API.
    */
   public interface WarningMessageHook
@@ -73,6 +102,27 @@ public class SteamUtils
      * Called when the application is resuming from a suspended state.
      */
     public void appResumingFromSuspend ();
+  }
+
+  /**
+   * A callback interface for parties interested in the full-screen gamepad text input
+   * UI (shown via {@link #showGamepadTextInput}) being dismissed. Unlike its floating
+   * cousin, the full-screen flow has Steam own the entire text-entry session, so the
+   * dismissal carries the submission state and length; retrieve the typed text via
+   * {@link #getEnteredGamepadTextInput()}.
+   */
+  public interface GamepadTextInputDismissedCallback
+  {
+    /**
+     * Called when the full-screen gamepad text input UI has been closed.
+     *
+     * @param submitted true if the user accepted their input, false if they canceled.
+     * @param submittedText the byte-length of the entered text. Only meaningful when
+     *     {@code submitted} is true; pair with {@link #getEnteredGamepadTextInput()}
+     *     to retrieve the actual text.
+     * @param appId the Steam AppID for which the dialog was shown.
+     */
+    public void gamepadTextInputDismissed (boolean submitted, int submittedText, int appId);
   }
 
   /**
@@ -196,6 +246,94 @@ public class SteamUtils
   }
 
   /**
+   * Shows the full-screen gamepad text input UI -- Steam takes over the screen with
+   * its own virtual keyboard. After the user dismisses the dialog, listeners
+   * registered via {@link #addGamepadTextInputDismissedCallback} will fire with the
+   * submission state; retrieve the entered text (if accepted) via
+   * {@link #getEnteredGamepadTextInput()}.
+   *
+   * @param mode plaintext or password.
+   * @param lineMode single line (enter dismisses) or multiple lines.
+   * @param description prompt text shown above the input field.
+   * @param charMax maximum number of characters the user may enter.
+   * @param existingText pre-populated text in the input field, or null/empty for none.
+   * @return true if the dialog was shown successfully.
+   */
+  public static boolean showGamepadTextInput (
+    GamepadTextInputMode mode, GamepadTextInputLineMode lineMode,
+    String description, int charMax, String existingText)
+  {
+    if (mode == null) {
+      throw new NullPointerException("mode");
+    }
+    if (lineMode == null) {
+      throw new NullPointerException("lineMode");
+    }
+    try (Arena arena = Arena.ofConfined()) {
+      MemorySegment desc = CSteam.allocCString(arena, description != null ? description : "");
+      MemorySegment existing = CSteam.allocCString(
+        arena, existingText != null ? existingText : "");
+      return (boolean) CSteam.ISteamUtils_ShowGamepadTextInput.invokeExact(
+        self(), mode.ordinal(), lineMode.ordinal(), desc, charMax, existing);
+    } catch (Throwable t) {
+      throw SteamAPI.wrap(t);
+    }
+  }
+
+  /**
+   * Returns the byte-length of the most recently submitted gamepad text input. Equal
+   * to the {@code submittedText} value delivered to a
+   * {@link GamepadTextInputDismissedCallback}.
+   */
+  public static int getEnteredGamepadTextLength ()
+  {
+    try {
+      return (int) CSteam.ISteamUtils_GetEnteredGamepadTextLength.invokeExact(self());
+    } catch (Throwable t) {
+      throw SteamAPI.wrap(t);
+    }
+  }
+
+  /**
+   * Convenience: retrieves the most recently submitted gamepad text input as a
+   * Java String. Returns null if no text is available (e.g. the user canceled).
+   *
+   * <p>Steam returns NUL-terminated UTF-8; this method allocates a buffer sized to
+   * {@link #getEnteredGamepadTextLength()} and decodes the result.
+   */
+  public static String getEnteredGamepadTextInput ()
+  {
+    int len = getEnteredGamepadTextLength();
+    if (len <= 0) {
+      return null;
+    }
+    try (Arena arena = Arena.ofConfined()) {
+      MemorySegment buf = arena.allocate(len);
+      boolean ok = (boolean) CSteam.ISteamUtils_GetEnteredGamepadTextInput.invokeExact(
+        self(), buf, len);
+      return ok ? CSteam.readCString(buf) : null;
+    } catch (Throwable t) {
+      throw SteamAPI.wrap(t);
+    }
+  }
+
+  /**
+   * Dismisses the full-screen gamepad text input dialog if it is currently shown.
+   * Listeners registered via {@link #addGamepadTextInputDismissedCallback} will be
+   * notified once the dialog finishes closing.
+   *
+   * @return true if the dialog was successfully dismissed.
+   */
+  public static boolean dismissGamepadTextInput ()
+  {
+    try {
+      return (boolean) CSteam.ISteamUtils_DismissGamepadTextInput.invokeExact(self());
+    } catch (Throwable t) {
+      throw SteamAPI.wrap(t);
+    }
+  }
+
+  /**
    * Adds a listener that will be notified when the floating on-screen keyboard is
    * dismissed -- either by the user or via {@link #dismissFloatingGamepadTextInput}.
    */
@@ -247,6 +385,38 @@ public class SteamUtils
     AppResumingFromSuspendCallback callback)
   {
     _appResumingCallbacks.remove(callback);
+  }
+
+  /**
+   * Adds a listener that will be notified when the full-screen gamepad text input
+   * dialog is dismissed.
+   */
+  public static void addGamepadTextInputDismissedCallback (
+    GamepadTextInputDismissedCallback callback)
+  {
+    if (_gamepadDismissedCallbacks.isEmpty()) {
+      SteamAPI.dispatcher().setBroadcastHandler(CB_GamepadTextInputDismissed, seg -> {
+        boolean submitted = seg.get(
+          ValueLayout.JAVA_BYTE, CSteam.GAMEPAD_DISMISSED_OFFSET_SUBMITTED) != 0;
+        int submittedText = seg.get(
+          ValueLayout.JAVA_INT, CSteam.GAMEPAD_DISMISSED_OFFSET_SUBMITTED_TEXT);
+        int appId = seg.get(
+          ValueLayout.JAVA_INT, CSteam.GAMEPAD_DISMISSED_OFFSET_APP_ID);
+        for (GamepadTextInputDismissedCallback cb : _gamepadDismissedCallbacks) {
+          cb.gamepadTextInputDismissed(submitted, submittedText, appId);
+        }
+      });
+    }
+    _gamepadDismissedCallbacks.add(callback);
+  }
+
+  /**
+   * Removes a previously registered full-screen-keyboard dismissal listener.
+   */
+  public static void removeGamepadTextInputDismissedCallback (
+    GamepadTextInputDismissedCallback callback)
+  {
+    _gamepadDismissedCallbacks.remove(callback);
   }
 
   /**
@@ -316,12 +486,17 @@ public class SteamUtils
   private static volatile MemorySegment _warningStub;
 
   /** Callback IDs (k_iSteamUtilsCallbacks = 700). */
+  private static final int CB_GamepadTextInputDismissed         = 714; // +14
   private static final int CB_AppResumingFromSuspend            = 736; // +36
   private static final int CB_FloatingGamepadTextInputDismissed = 738; // +38
 
   /** Listeners for floating-keyboard dismissal events. */
   private static final CopyOnWriteArrayList<FloatingGamepadTextInputDismissedCallback>
     _floatingDismissedCallbacks = new CopyOnWriteArrayList<>();
+
+  /** Listeners for full-screen-keyboard dismissal events. */
+  private static final CopyOnWriteArrayList<GamepadTextInputDismissedCallback>
+    _gamepadDismissedCallbacks = new CopyOnWriteArrayList<>();
 
   /** Listeners for app-resuming-from-suspend events. */
   private static final CopyOnWriteArrayList<AppResumingFromSuspendCallback>

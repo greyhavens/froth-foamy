@@ -62,6 +62,20 @@ public class SteamUtils
   }
 
   /**
+   * A callback interface for parties interested in the application resuming from a
+   * suspended state (e.g. the user putting their Steam Deck to sleep and waking it
+   * back up). Useful for re-syncing audio devices, reconnecting controllers, or
+   * pausing real-time game systems while the user steps away.
+   */
+  public interface AppResumingFromSuspendCallback
+  {
+    /**
+     * Called when the application is resuming from a suspended state.
+     */
+    public void appResumingFromSuspend ();
+  }
+
+  /**
    * Returns the application ID of the current process.
    */
   public static int getAppID ()
@@ -210,6 +224,32 @@ public class SteamUtils
   }
 
   /**
+   * Adds a listener that will be notified when the application is resuming from a
+   * suspended state.
+   */
+  public static void addAppResumingFromSuspendCallback (AppResumingFromSuspendCallback callback)
+  {
+    if (_appResumingCallbacks.isEmpty()) {
+      SteamAPI.dispatcher().setBroadcastHandler(CB_AppResumingFromSuspend, seg -> {
+        // AppResumingFromSuspend_t carries no payload.
+        for (AppResumingFromSuspendCallback cb : _appResumingCallbacks) {
+          cb.appResumingFromSuspend();
+        }
+      });
+    }
+    _appResumingCallbacks.add(callback);
+  }
+
+  /**
+   * Removes a previously registered app-resuming-from-suspend listener.
+   */
+  public static void removeAppResumingFromSuspendCallback (
+    AppResumingFromSuspendCallback callback)
+  {
+    _appResumingCallbacks.remove(callback);
+  }
+
+  /**
    * Checks whether Steam is running on a Steam Deck device.
    *
    * @returns true if the current device is a Steam Deck, otherwise false.
@@ -275,12 +315,17 @@ public class SteamUtils
   /** Cached upcall stub; created lazily on first hook registration and reused. */
   private static volatile MemorySegment _warningStub;
 
-  /** Callback ID (k_iSteamUtilsCallbacks = 700, FloatingGamepadTextInputDismissed_t = +38). */
-  private static final int CB_FloatingGamepadTextInputDismissed = 738;
+  /** Callback IDs (k_iSteamUtilsCallbacks = 700). */
+  private static final int CB_AppResumingFromSuspend            = 736; // +36
+  private static final int CB_FloatingGamepadTextInputDismissed = 738; // +38
 
   /** Listeners for floating-keyboard dismissal events. */
   private static final CopyOnWriteArrayList<FloatingGamepadTextInputDismissedCallback>
     _floatingDismissedCallbacks = new CopyOnWriteArrayList<>();
+
+  /** Listeners for app-resuming-from-suspend events. */
+  private static final CopyOnWriteArrayList<AppResumingFromSuspendCallback>
+    _appResumingCallbacks = new CopyOnWriteArrayList<>();
 
   private static volatile MemorySegment _self;
 }

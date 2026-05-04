@@ -18,6 +18,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <scm>
+      <developerConnection>scm:git:https://github.com/greyhavens/froth-foamy.git</developerConnection>
+    </scm>
+
     <build>
         <plugins>
             <plugin>

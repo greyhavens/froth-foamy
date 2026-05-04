@@ -4,7 +4,7 @@
 
     <groupId>com.threerings</groupId>
     <artifactId>froth-foamy</artifactId>
-    <version>0.1</version>
+    <version>0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Froth-Foamy - Java API for Steam SDK, via FFM</name>
@@ -18,7 +18,7 @@
 
     <scm>
       <developerConnection>scm:git:https://github.com/greyhavens/froth-foamy.git</developerConnection>
-      <tag>froth-foamy-0.1</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <build>

@@ -1,36 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.threerings</groupId>
-    <artifactId>froth-foamy</artifactId>
-    <version>0.2-SNAPSHOT</version>
-    <packaging>jar</packaging>
+  <groupId>com.threerings</groupId>
+  <artifactId>froth-foamy</artifactId>
+  <version>0.2-SNAPSHOT</version>
+  <packaging>jar</packaging>
 
-    <name>Froth-Foamy - Java API for Steam SDK, via FFM</name>
-    <description>Drop-in replacement for froth: pure-Java bindings for the Steamworks SDK
-        using the Foreign Function and Memory API.</description>
+  <name>Froth-Foamy - Java API for Steam SDK, via FFM</name>
+  <description>
+    Drop-in replacement for froth: pure-Java bindings for the Steamworks SDK
+    using the Foreign Function and Memory API.
+  </description>
 
-    <properties>
-        <maven.compiler.release>25</maven.compiler.release>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+  <properties>
+    <maven.compiler.release>25</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 
-    <scm>
-      <developerConnection>scm:git:https://github.com/greyhavens/froth-foamy.git</developerConnection>
-      <tag>HEAD</tag>
+  <scm>
+    <developerConnection>scm:git:https://github.com/greyhavens/froth-foamy.git</developerConnection>
+    <tag>HEAD</tag>
   </scm>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
-                <configuration>
-                    <release>25</release>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <release>25</release>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

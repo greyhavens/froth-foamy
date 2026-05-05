@@ -212,7 +212,7 @@ public class SteamUtils
    * game window and is used to position the floating keyboard in a way that doesn't cover
    * the text field.
    *
-   * @returns true if the floating keyboard was shown, otherwise, false.
+   * @return true if the floating keyboard was shown, otherwise, false.
    */
   public static boolean showFloatingGamepadTextInput (
    FloatingGamepadTextInputMode keyboardMode,
@@ -422,7 +422,7 @@ public class SteamUtils
   /**
    * Checks whether Steam is running on a Steam Deck device.
    *
-   * @returns true if the current device is a Steam Deck, otherwise false.
+   * @return true if the current device is a Steam Deck, otherwise false.
    */
   public static boolean isSteamRunningOnSteamDeck ()
   {

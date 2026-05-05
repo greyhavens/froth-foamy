@@ -13,15 +13,38 @@
     using the Foreign Function and Memory API.
   </description>
 
+  <url>https://github.com/greyhavens/froth-foamy</url>
+  <issueManagement>
+    <url>https://github.com/greyhavens/froth-foamy/issues</url>
+  </issueManagement>
+
+  <scm>
+    <connection>scm:git:https://github.com/greyhavens/froth-foamy.git</connection>
+    <developerConnection>scm:git:https://github.com/greyhavens/froth-foamy.git</developerConnection>
+    <url>https://github.com/greyhavens/froth-foamy/</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <developers>
+    <developer>
+      <id>raygreenwell</id>
+      <name>Ray Greenwell</name>
+      <email>ray@greyhavens.co</email>
+    </developer>
+  </developers>
+
+  <licenses>
+    <license>
+      <name>The (New) BSD License</name>
+      <url>http://www.opensource.org/licenses/bsd-license.php</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
   <properties>
     <maven.compiler.release>25</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
-
-  <scm>
-    <developerConnection>scm:git:https://github.com/greyhavens/froth-foamy.git</developerConnection>
-    <tag>HEAD</tag>
-  </scm>
 
   <build>
     <plugins>
@@ -33,6 +56,82 @@
           <release>25</release>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9.1</version>
+        <configuration>
+          <quiet>true</quiet>
+          <show>public</show>
+          <additionalparam>-Xdoclint:all -Xdoclint:-missing</additionalparam>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.8.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <publishingServerId>central</publishingServerId>
+          <autoPublish>true</autoPublish>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>release-extras</id>
+      <activation>
+        <property><name>performRelease</name><value>true</value></property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>2.1.2</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.9.1</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.5</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <keyname>mdb@samskivert.com</keyname>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

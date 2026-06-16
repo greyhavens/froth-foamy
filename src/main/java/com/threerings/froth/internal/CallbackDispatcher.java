@@ -80,9 +80,6 @@ public final class CallbackDispatcher
    * Register a one-shot handler for an async API call. The handler fires (and is then
    * removed) when {@code SteamAPICallCompleted_t} arrives with a matching call handle.
    *
-   * <p>The result buffer is sized from Steam's reported {@code m_cubParam} at dispatch
-   * time (the authoritative size), so callers don't supply one.
-   *
    * @param hCall the {@code SteamAPICall_t} handle returned by the API call.
    * @param expectedCallbackId the {@code k_iCallback} value of the expected result struct.
    * @param handler invoked exactly once when the result lands.

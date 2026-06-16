@@ -112,7 +112,12 @@ public final class CSteam
   public static final long APICOMPLETED_OFFSET_ICALLBACK  = 8;
   public static final long APICOMPLETED_OFFSET_CUBPARAM   = 12;
 
-  /** {@code MicroTxnAuthorizationResponse_t}: { uint32 appID; uint64 orderID; uint8 authorized; } */
+  /**
+   * {@code MicroTxnAuthorizationResponse_t}: { uint32 appID; uint64 orderID; uint8 authorized; }.
+   * Under pack(4) ({@link #PACK_SMALL}) orderID lands at offset 4, a 4-byte boundary, so it MUST
+   * be read with {@link ValueLayout#JAVA_LONG_UNALIGNED}: a plain {@code JAVA_LONG} read throws
+   * {@code IllegalArgumentException} whenever the buffer base is 8-aligned (the usual case).
+   */
   public static final long MICROTXN_OFFSET_APPID      = 0;
   public static final long MICROTXN_OFFSET_ORDERID    = PACK_SMALL ? 4  : 8;
   public static final long MICROTXN_OFFSET_AUTHORIZED = PACK_SMALL ? 12 : 16;
@@ -168,7 +173,11 @@ public final class CSteam
   public static final long LOBBYENTER_OFFSET_LOCKED               = 12;
   public static final long LOBBYENTER_OFFSET_CHATROOMENTERRESPONSE = 16;
 
-  /** {@code LobbyCreated_t}: { EResult result; uint64 lobbyID; } */
+  /**
+   * {@code LobbyCreated_t}: { EResult result; uint64 lobbyID; }. Under pack(4) ({@link #PACK_SMALL})
+   * lobbyID lands at offset 4, a 4-byte boundary, so it MUST be read with
+   * {@link ValueLayout#JAVA_LONG_UNALIGNED} (see {@link #MICROTXN_OFFSET_ORDERID}).
+   */
   public static final long LOBBYCREATED_OFFSET_RESULT  = 0;
   public static final long LOBBYCREATED_OFFSET_LOBBYID = PACK_SMALL ? 4 : 8;
 

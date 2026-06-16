@@ -110,8 +110,9 @@ public class SteamMatchmaking
         (resultSeg, ioFailure) -> {
           int eresult = ioFailure ? E_RESULT_FAIL :
             resultSeg.get(ValueLayout.JAVA_INT, CSteam.LOBBYCREATED_OFFSET_RESULT);
+          // m_ulSteamIDLobby sits on a 4-byte boundary under pack(4); read unaligned (see CSteam).
           long lobbyId = ioFailure ? 0L :
-            resultSeg.get(ValueLayout.JAVA_LONG, CSteam.LOBBYCREATED_OFFSET_LOBBYID);
+            resultSeg.get(ValueLayout.JAVA_LONG_UNALIGNED, CSteam.LOBBYCREATED_OFFSET_LOBBYID);
           callback.createLobbyResponse(eresultToEnum(eresult), lobbyId);
         });
     } catch (Throwable t) {

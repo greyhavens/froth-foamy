@@ -91,7 +91,8 @@ public class SteamUser
     if (_microTxnCallbacks.isEmpty()) {
       SteamAPI.dispatcher().setBroadcastHandler(CB_MicroTxnAuthResponse, seg -> {
         int appId = seg.get(ValueLayout.JAVA_INT, CSteam.MICROTXN_OFFSET_APPID);
-        long orderId = seg.get(ValueLayout.JAVA_LONG, CSteam.MICROTXN_OFFSET_ORDERID);
+        // m_ulOrderID sits on a 4-byte boundary under pack(4); read unaligned (see CSteam).
+        long orderId = seg.get(ValueLayout.JAVA_LONG_UNALIGNED, CSteam.MICROTXN_OFFSET_ORDERID);
         boolean authorized = seg.get(
           ValueLayout.JAVA_BYTE, CSteam.MICROTXN_OFFSET_AUTHORIZED) != 0;
         for (MicroTxnCallback cb : _microTxnCallbacks) {

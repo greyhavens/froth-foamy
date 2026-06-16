@@ -80,16 +80,17 @@ public final class CallbackDispatcher
    * Register a one-shot handler for an async API call. The handler fires (and is then
    * removed) when {@code SteamAPICallCompleted_t} arrives with a matching call handle.
    *
+   * <p>The result buffer is sized from Steam's reported {@code m_cubParam} at dispatch
+   * time (the authoritative size), so callers don't supply one.
+   *
    * @param hCall the {@code SteamAPICall_t} handle returned by the API call.
    * @param expectedCallbackId the {@code k_iCallback} value of the expected result struct.
-   * @param resultSize the size in bytes of the expected result struct.
    * @param handler invoked exactly once when the result lands.
    */
   public void registerCallResult (
-    long hCall, int expectedCallbackId, int resultSize, CallResultHandler handler)
+    long hCall, int expectedCallbackId, CallResultHandler handler)
   {
-    _callResults.put(hCall,
-      new CallResultRegistration(expectedCallbackId, resultSize, handler));
+    _callResults.put(hCall, new CallResultRegistration(expectedCallbackId, handler));
   }
 
   /**
@@ -196,7 +197,8 @@ public final class CallbackDispatcher
       return;
     }
 
-    // Allocate a buffer for the actual result struct, then ask Steam to fill it in.
+    // Allocate a buffer sized by Steam's reported m_cubParam (the authoritative result
+    // size) and ask Steam to fill it in; GetAPICallResult requires this exact size.
     MemorySegment resultBuf = callArena.allocate(innerSize);
     MemorySegment failedFlag = callArena.allocate(ValueLayout.JAVA_BOOLEAN);
     boolean ok = (boolean) CSteam.SteamAPI_ManualDispatch_GetAPICallResult.invokeExact(
@@ -217,8 +219,7 @@ public final class CallbackDispatcher
     return new RuntimeException(_name + ": " + op + " failed", t);
   }
 
-  private record CallResultRegistration(
-    int expectedCallbackId, int resultSize, CallResultHandler handler) {}
+  private record CallResultRegistration(int expectedCallbackId, CallResultHandler handler) {}
 
   private final String _name;
   private final PipeAccessor _getPipe;

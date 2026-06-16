@@ -103,10 +103,8 @@ public class SteamMatchmaking
     try {
       long hCall = (long) CSteam.ISteamMatchmaking_CreateLobby.invokeExact(
         self(), type.ordinal(), maxMembers);
-      // LobbyCreated_t struct: { EResult m_eResult; uint64 m_ulSteamIDLobby; }.
-      // Size differs by packing: 12 bytes on Linux/macOS pack(4), 16 on Windows pack(8).
-      int structSize = (int) (CSteam.LOBBYCREATED_OFFSET_LOBBYID + 8);
-      SteamAPI.dispatcher().registerCallResult(hCall, CB_LobbyCreated, structSize,
+      // LobbyCreated_t: { EResult m_eResult; uint64 m_ulSteamIDLobby; }.
+      SteamAPI.dispatcher().registerCallResult(hCall, CB_LobbyCreated,
         (resultSeg, ioFailure) -> {
           int eresult = ioFailure ? E_RESULT_FAIL :
             resultSeg.get(ValueLayout.JAVA_INT, CSteam.LOBBYCREATED_OFFSET_RESULT);
@@ -128,9 +126,8 @@ public class SteamMatchmaking
     try {
       long hCall = (long) CSteam.ISteamMatchmaking_JoinLobby.invokeExact(
         self(), steamIdLobby);
-      // LobbyEnter_t struct fields land at offsets 0/8/12/16 in both packings.
-      int structSize = 24; // covers both pack(4)=20 and pack(8)=24
-      SteamAPI.dispatcher().registerCallResult(hCall, CB_LobbyEnter, structSize,
+      // LobbyEnter_t fields land at offsets 0/8/12/16 in both packings.
+      SteamAPI.dispatcher().registerCallResult(hCall, CB_LobbyEnter,
         (resultSeg, ioFailure) -> {
           if (ioFailure) {
             callback.enterLobbyResponse(

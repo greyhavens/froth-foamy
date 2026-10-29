@@ -340,6 +340,8 @@ public final class CSteam
     dc("SteamAPI_ISteamFriends_GetFriendCount", FunctionDescriptor.of(I32, PTR, I32));
   public static final MethodHandle ISteamFriends_GetFriendByIndex =
     dc("SteamAPI_ISteamFriends_GetFriendByIndex", FunctionDescriptor.of(I64, PTR, I32, I32));
+  public static final MethodHandle ISteamFriends_HasFriend =
+    dc("SteamAPI_ISteamFriends_HasFriend", FunctionDescriptor.of(BOOL, PTR, I64, I32));
   public static final MethodHandle ISteamFriends_GetFriendPersonaState =
     dc("SteamAPI_ISteamFriends_GetFriendPersonaState", FunctionDescriptor.of(I32, PTR, I64));
   public static final MethodHandle ISteamFriends_GetFriendPersonaName =

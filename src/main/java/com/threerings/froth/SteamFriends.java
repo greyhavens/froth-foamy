@@ -165,6 +165,18 @@ public class SteamFriends
   }
 
   /**
+   * Returns whether the specified user has a relationship with us matching the specified flags.
+   */
+  public static boolean hasFriend (long steamId, int flags)
+  {
+    try {
+      return (boolean) CSteam.ISteamFriends_HasFriend.invokeExact(self(), steamId, flags);
+    } catch (Throwable t) {
+      throw SteamAPI.wrap(t);
+    }
+  }
+
+  /**
    * Retrieves the state of a friend.
    */
   public static PersonaState getFriendPersonaState (long steamId)
